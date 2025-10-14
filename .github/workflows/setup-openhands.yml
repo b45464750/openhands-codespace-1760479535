@@ -1,0 +1,84 @@
+
+name: Setup OpenHands in Codespace
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  setup-openhands:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl wget git python3 python3-pip nodejs npm docker.io python3-tk
+
+    - name: Start Docker
+      run: |
+        sudo systemctl start docker
+        sudo usermod -aG docker $USER
+
+    - name: Install OpenHands CLI
+      run: |
+        if curl -fsSL https://cli.openhands.com/install.sh | sh; then
+          echo "OpenHands установлен через официальный скрипт"
+        elif pip3 install openhands-ai --user; then
+          echo "OpenHands установлен через pip"
+          export PATH="$HOME/.local/bin:$PATH"
+        else
+          echo "Создание Docker-контейнера с OpenHands..."
+          
+          cat > Dockerfile.openhands << 'EOF'
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    python3 \
+    python3-pip \
+    nodejs \
+    npm \
+    docker.io \
+    docker-compose \
+    sudo \
+    python3-tk \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://cli.openhands.com/install.sh | sh || \
+    pip3 install openhands-ai --user
+
+WORKDIR /workspace
+VOLUME /workspace
+
+CMD ["/bin/bash"]
+EOF
+          
+          if docker build -t openhands-codespace -f Dockerfile.openhands .; then
+            echo "Docker-образ с OpenHands создан"
+            echo "Для запуска OpenHands используйте:"
+            echo "docker run -it --rm -v $(pwd):/workspace -w /workspace openhands-codespace bash"
+          else
+            echo "Ошибка создания Docker-образа"
+            exit 1
+          fi
+        fi
+
+    - name: Verify Installation
+      run: |
+        if command -v openhands &> /dev/null; then
+          echo "OpenHands CLI успешно установлен"
+          openhands --version
+        else
+          echo "OpenHands CLI не установлен в системе"
+        fi

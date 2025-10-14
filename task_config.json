@@ -1,0 +1,6 @@
+{
+  "task": "Create a calendar application with notes functionality. The application should include: 1. Monthly/weekly/daily views of calendar 2. Ability to add, edit and delete notes for specific dates 3. Simple and intuitive GUI interface 4. Data persistence (save notes to local file) 5. Date navigation controls 6. Visual indicators for days with notes",
+  "model": "Grok",
+  "api_key": "gsk_tPBQAmaHWAQ7V3gSD2wMWGdyb3FYe7AeoGsvhpO6DyOQQloAptvyGROK",
+  "output_dir": "/workspaces/calendar-app"
+}

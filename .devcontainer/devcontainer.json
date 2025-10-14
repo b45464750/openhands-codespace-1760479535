@@ -5,8 +5,9 @@
     "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  "onCreateCommand": "echo '\u0423\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430 \u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e\u0441\u0442\u0435\u0439...' && sudo apt-get update && sudo apt-get install -y curl wget git python3 python3-pip nodejs npm docker.io python3-tk",
-  "postCreateCommand": "echo '\u0417\u0430\u043f\u0443\u0441\u043a \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0438 OpenHands CLI...' && bash ./.setup/install_openhands.sh",
+  "onCreateCommand": "echo 'Установка зависимостей...' && sudo apt-get update && sudo apt-get install -y curl wget git python3 python3-pip nodejs npm docker.io python3-tk jq",
+  "postCreateCommand": "echo 'Запуск установки OpenHands CLI...' && bash ./.setup/install_openhands.sh",
+  "postStartCommand": "echo 'Проверка наличия задач...' && bash ./auto_run_task.sh",
   "customizations": {
     "vscode": {
       "extensions": [

@@ -1,0 +1,58 @@
+name: OpenHands Task Runner
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'task_config.json'
+      - 'run_task.sh'
+
+jobs:
+  run-openhands-task:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Setup GitHub CLI
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+      run: |
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update
+        sudo apt install gh
+
+    - name: Authenticate GitHub CLI
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl wget git python3 python3-pip nodejs npm docker.io python3-tk
+
+    - name: Start Docker
+      run: |
+        sudo systemctl start docker
+        sudo usermod -aG docker $USER
+
+    - name: Run task in Codespace
+      env:
+        GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+        DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+      run: |
+        # Подключаемся к Codespace и запускаем задачу
+        gh cs ssh -c stunning-dollop-wrxpj9q4vvqgf5pq4 -- "cd /workspaces/openhands-codespace-1760479535 && bash run_task.sh"
